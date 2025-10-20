@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  tcp-server:
+    build: ./tcp-server
+    image: fiap/tcp-server:latest
+    container_name: tcp-server
+    environment:
+      TCP_SERVER_PORT: 8888
+      TCP_CLIENT_PUBLICKEY: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvivRW8Oj+JVsLnvpzQpIlgWvjKLcvcQ9JPzDT9a4Xs6prTeJEJA3yGzKiUYZ90Mc35yNn4T6NS2UzJeRUTmgGVIVemC53vWRFQz69G92HxshKmTMJ74jFLu3Ar4XzhfaQspnBDTcCi9P40nqX92Zs1M0PkbBUWmK52FT5Ps2EjY7qO7zUKgypCs6bP67+kA/SxswEryHN334KHVkVXFQrcJHziT7BSyQxCcm6YXluNaFJ1S5I+qRvwVEqfzW7VLKWZoPSN6fOEyBK/dWj3orXMIPUH2dFoUuWNti57ITnJvdl0sJWZN13wDkqsIrB1gICIM0nvlGOzgx4mvLURNUtQIDAQAB
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./tcp-server/server_private.pem:/app/server_private.pem:ro
+      - ./tcp-server/server_public.pem:/app/server_public.pem:ro
+    networks:
+      - tcp-network
+
+  tcp-client-1:
+    build: ./tcp-client
+    image: fiap/tcp-client:latest
+    container_name: tcp-client-1
+    environment:
+      TCP_SERVER_ADDRESS: tcp-server
+      TCP_SERVER_PORT: 8888
+      CLIENT_ID: 1
+    ports:
+      - "8081:8081"  # host:container
+    volumes:
+      - ./tcp-client/client_private.pem:/app/client_private.pem:ro
+      - ./tcp-client/client_public.pem:/app/client_public.pem:ro
+    networks:
+      - tcp-network
+
+  tcp-client-2:
+    image: fiap/tcp-client:latest
+    container_name: tcp-client-2
+    environment:
+      TCP_SERVER_ADDRESS: tcp-server
+      TCP_SERVER_PORT: 8888
+      CLIENT_ID: 2
+    ports:
+      - "8082:8081"  # porta incremental no host
+    volumes:
+      - ./tcp-client/client_private.pem:/app/client_private.pem:ro
+      - ./tcp-client/client_public.pem:/app/client_public.pem:ro
+    networks:
+      - tcp-network
+
+  tcp-client-3:
+    image: fiap/tcp-client:latest
+    container_name: tcp-client-3
+    environment:
+      TCP_SERVER_ADDRESS: tcp-server
+      TCP_SERVER_PORT: 8888
+      CLIENT_ID: 1
+    ports:
+      - "8083:8081"  # porta incremental no host
+    volumes:
+      - ./tcp-client/client_private.pem:/app/client_private.pem:ro
+      - ./tcp-client/client_public.pem:/app/client_public.pem:ro
+    networks:
+      - tcp-network
+
+networks:
+  tcp-network:
+    driver: bridge
